@@ -33,6 +33,7 @@ export default function PostCard({ title, excerpt, date, slug, category, readTim
                 <Link
                     href={`/blog/${slug}`}
                     className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                    aria-label={`Read more about ${title}`}
                 >
                     Read more <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
