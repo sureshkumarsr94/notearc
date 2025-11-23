@@ -15,8 +15,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NoteArc - Modern Blog",
-  description: "A modern blog built with Next.js and Tailwind CSS",
+  metadataBase: new URL('https://www.notearc.info'),
+  title: {
+    default: 'NoteArc - Discover Stories that Ignite Your Creativity',
+    template: '%s | NoteArc',
+  },
+  description: 'Explore insightful articles on personal development, communication, productivity, and finance. Join NoteArc to discover stories that inspire and transform.',
+  keywords: ['blog', 'personal development', 'self improvement', 'productivity', 'finance', 'communication skills', 'habits', 'lifestyle'],
+  authors: [{ name: 'NoteArc Team' }],
+  creator: 'NoteArc',
+  publisher: 'NoteArc',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.notearc.info',
+    siteName: 'NoteArc',
+    title: 'NoteArc - Discover Stories that Ignite Your Creativity',
+    description: 'Explore insightful articles on personal development, communication, productivity, and finance.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NoteArc - Discover Stories that Ignite Your Creativity',
+    description: 'Explore insightful articles on personal development, communication, productivity, and finance.',
+    creator: '@notearc',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // Add your actual verification code
+  },
 };
 
 export default function RootLayout({
