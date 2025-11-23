@@ -1,8 +1,9 @@
 "use client";
 
 import Link from 'next/link';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import SearchBar from './SearchBar';
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +25,7 @@ export default function Header() {
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
+                    <SearchBar />
                     <button
                         className="md:hidden p-2 text-gray-500 hover:text-primary-600 transition-colors"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}

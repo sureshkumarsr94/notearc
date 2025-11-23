@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
 import { getAllPosts } from '@/lib/posts';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-    const posts = getAllPosts();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    const posts = await getAllPosts();
     const baseUrl = 'https://www.notearc.info';
 
     // Generate sitemap entries for all blog posts

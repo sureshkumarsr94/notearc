@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Github, Twitter, Linkedin } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -14,24 +13,18 @@ export default function Footer() {
                     </span>
                 </Link>
 
-                <div className="text-sm text-gray-500 md:order-3">
-                    © {new Date().getFullYear()} NoteArc. All rights reserved.
+                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-sm text-gray-500 md:order-3">
+                    <span>© {new Date().getFullYear()} NoteArc. All rights reserved.</span>
+                    <div className="flex gap-4">
+                        <Link href="/privacy-policy" className="hover:text-primary-600 transition-colors">
+                            Privacy Policy
+                        </Link>
+                        <Link href="/terms-conditions" className="hover:text-primary-600 transition-colors">
+                            Terms & Conditions
+                        </Link>
+                    </div>
                 </div>
 
-                <div className="flex space-x-6 md:order-2">
-                    <Link href="#" className="text-gray-500 hover:text-primary-600 transition-colors" aria-label="Follow us on Twitter">
-                        <Twitter className="h-5 w-5" />
-                        <span className="sr-only">Twitter</span>
-                    </Link>
-                    <Link href="#" className="text-gray-500 hover:text-primary-600 transition-colors" aria-label="Follow us on GitHub">
-                        <Github className="h-5 w-5" />
-                        <span className="sr-only">GitHub</span>
-                    </Link>
-                    <Link href="#" className="text-gray-500 hover:text-primary-600 transition-colors" aria-label="Connect with us on LinkedIn">
-                        <Linkedin className="h-5 w-5" />
-                        <span className="sr-only">LinkedIn</span>
-                    </Link>
-                </div>
             </div>
         </footer>
     );

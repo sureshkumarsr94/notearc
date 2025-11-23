@@ -2,13 +2,14 @@ import { getPostBySlug, getAllPosts } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import ViewCounter from '@/components/blog/ViewCounter';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-    const posts = getAllPosts();
+    const posts = await getAllPosts();
     return posts.map((post) => ({
         slug: post.slug,
     }));
@@ -16,7 +17,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
     const { slug } = await params;
-    const post = getPostBySlug(slug);
+    const post = await getPostBySlug(slug);
 
     if (!post) {
         return {
@@ -74,7 +75,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlogPostPage({ params }: PageProps) {
     const { slug } = await params;
-    const post = getPostBySlug(slug);
+    const post = await getPostBySlug(slug);
 
     if (!post) {
         notFound();
@@ -105,7 +106,12 @@ export default async function BlogPostPage({ params }: PageProps) {
                             <Clock className="h-4 w-4" />
                             {post.readTime}
                         </span>
+                        <span className="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                            {post.views} views
+                        </span>
                     </div>
+                    <ViewCounter slug={post.slug} />
                     <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                         {post.title}
                     </h1>
