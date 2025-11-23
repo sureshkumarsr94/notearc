@@ -3,6 +3,8 @@ import PostCard from '@/components/blog/PostCard';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: 'Blog | NoteArc',
     description: 'Explore all our articles on technology, design, and lifestyle.',
@@ -62,8 +64,8 @@ export default async function BlogPage({
                                 key={p}
                                 href={`/blog?page=${p}`}
                                 className={`flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-medium ${p === page
-                                        ? 'border-orange-500 bg-orange-500 text-white'
-                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    ? 'border-orange-500 bg-orange-500 text-white'
+                                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
                                 {p}

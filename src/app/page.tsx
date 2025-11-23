@@ -3,6 +3,8 @@ import PostCard from '@/components/blog/PostCard';
 import { Flame, Clock, Sparkles, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'NoteArc - Modern Blog',
   description: 'Read our latest articles on technology, design, and lifestyle.',
