@@ -58,9 +58,12 @@ export const metadata: Metadata = {
   verification: {
     google: 'your-google-verification-code', // Add your actual verification code
   },
+  other: {
+    'google-adsense-account': 'ca-pub-3921845751221806',
+  },
 };
 
-import Script from "next/script";
+
 
 export default function RootLayout({
   children,
@@ -69,14 +72,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3921845751221806"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
