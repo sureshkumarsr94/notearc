@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 import ViewCounter from '@/components/blog/ViewCounter';
+import AuthorAvatar from '@/components/AuthorAvatar';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,6 +114,24 @@ export default async function BlogPostPage({ params }: PageProps) {
                             {post.views} views
                         </span>
                     </div>
+
+                    {post.author && (
+                        <div className="mb-8 flex items-center gap-4 border-b border-gray-100 pb-8">
+                            <Link href={`/author/${post.author.slug}`} className="relative h-12 w-12 overflow-hidden rounded-full">
+                                <AuthorAvatar
+                                    name={post.author.name}
+                                    src={post.author.avatar}
+                                    className="h-full w-full text-sm"
+                                />
+                            </Link>
+                            <div>
+                                <Link href={`/author/${post.author.slug}`} className="font-medium text-gray-900 hover:text-primary-600">
+                                    {post.author.name}
+                                </Link>
+                                <p className="text-sm text-gray-500">{post.author.role}</p>
+                            </div>
+                        </div>
+                    )}
                     <ViewCounter slug={post.slug} />
                     <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                         {post.title}

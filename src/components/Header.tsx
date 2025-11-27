@@ -12,12 +12,12 @@ export default function Header() {
         <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
                 <div className="flex items-center gap-6">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold">
+                    <Link href="/" className="flex items-baseline gap-0.5 group">
+                        <span className="text-4xl font-black tracking-tighter text-[#FF5733] group-hover:text-[#E64A2E] transition-colors" style={{ fontFamily: 'var(--font-outfit)' }}>
                             N
-                        </div>
-                        <span className="text-xl font-bold tracking-tight text-gray-900">
-                            NoteArc
+                        </span>
+                        <span className="text-2xl font-bold tracking-tight text-[#FF5733] group-hover:text-[#E64A2E] transition-colors" style={{ fontFamily: 'var(--font-outfit)' }}>
+                            otearc
                         </span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

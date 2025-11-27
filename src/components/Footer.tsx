@@ -4,12 +4,12 @@ export default function Footer() {
     return (
         <footer className="border-t border-gray-200 bg-gray-50 py-6">
             <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <Link href="/" className="flex items-center gap-2" aria-label="NoteArc - Home">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold">
+                <Link href="/" className="flex items-baseline gap-0.5 group" aria-label="NoteArc - Home">
+                    <span className="text-4xl font-black tracking-tighter text-[#FF5733] group-hover:text-[#E64A2E] transition-colors" style={{ fontFamily: 'var(--font-outfit)' }}>
                         N
-                    </div>
-                    <span className="text-xl font-bold tracking-tight text-gray-900">
-                        NoteArc
+                    </span>
+                    <span className="text-2xl font-bold tracking-tight text-[#FF5733] group-hover:text-[#E64A2E] transition-colors" style={{ fontFamily: 'var(--font-outfit)' }}>
+                        otearc
                     </span>
                 </Link>
 

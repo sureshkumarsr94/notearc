@@ -40,55 +40,26 @@ export default async function BlogPage({
 
             {totalPages > 1 && (
                 <div className="flex justify-center gap-2">
-                    {page > 1 ? (
+                    {page > 1 && (
                         <Link
                             href={`/blog?page=${page - 1}`}
-                            className="flex items-center gap-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                             <ChevronLeft className="h-4 w-4" />
                             Previous
                         </Link>
-                    ) : (
-                        <button
-                            disabled
-                            className="flex items-center gap-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                            Previous
-                        </button>
                     )}
-
-                    <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                            <Link
-                                key={p}
-                                href={`/blog?page=${p}`}
-                                className={`flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-medium ${p === page
-                                    ? 'border-orange-500 bg-orange-500 text-white'
-                                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                                    }`}
-                            >
-                                {p}
-                            </Link>
-                        ))}
-                    </div>
-
-                    {page < totalPages ? (
+                    <span className="flex items-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+                        Page {page} of {totalPages}
+                    </span>
+                    {page < totalPages && (
                         <Link
                             href={`/blog?page=${page + 1}`}
-                            className="flex items-center gap-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                             Next
                             <ChevronRight className="h-4 w-4" />
                         </Link>
-                    ) : (
-                        <button
-                            disabled
-                            className="flex items-center gap-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed"
-                        >
-                            Next
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
                     )}
                 </div>
             )}

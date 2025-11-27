@@ -10,12 +10,47 @@ export interface Post {
   category: string;
   content: string;
   views: number;
+  author?: {
+    name: string;
+    slug: string;
+    avatar: string;
+    role: string;
+  };
 }
 
 export async function getAllPosts(): Promise<Post[]> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, content, views FROM posts');
-    const posts = rows as unknown as Post[];
+    const query = `
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+      FROM posts p
+      LEFT JOIN authors a ON p.author_id = a.id
+    `;
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      content: string;
+      views: number;
+      author_name: string | null;
+      author_slug: string | null;
+      author_avatar: string | null;
+      author_role: string | null;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(query);
+    const posts = rows.map((row) => ({
+      ...row,
+      author: row.author_name ? {
+        name: row.author_name,
+        slug: row.author_slug!,
+        avatar: row.author_avatar!,
+        role: row.author_role!
+      } : undefined
+    })) as Post[];
     return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -25,9 +60,41 @@ export async function getAllPosts(): Promise<Post[]> {
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, content, views FROM posts WHERE slug = ?', [slug]);
+    const query = `
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+      FROM posts p
+      LEFT JOIN authors a ON p.author_id = a.id
+      WHERE p.slug = ?
+    `;
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      content: string;
+      views: number;
+      author_name: string | null;
+      author_slug: string | null;
+      author_avatar: string | null;
+      author_role: string | null;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(query, [slug]);
     if (rows.length === 0) return undefined;
-    return rows[0] as unknown as Post;
+
+    const row = rows[0];
+    return {
+      ...row,
+      author: row.author_name ? {
+        name: row.author_name,
+        slug: row.author_slug!,
+        avatar: row.author_avatar!,
+        role: row.author_role!
+      } : undefined
+    } as Post;
   } catch (error) {
     console.error(`Error fetching post with slug ${slug}:`, error);
     return undefined;
@@ -97,5 +164,62 @@ export async function searchPosts(query: string): Promise<Post[]> {
   } catch (error) {
     console.error('Error searching posts:', error);
     return [];
+  }
+}
+export async function getPaginatedPostsByAuthor(authorSlug: string, page: number, limit: number): Promise<{ posts: Post[], total: number }> {
+  try {
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM posts p
+      JOIN authors a ON p.author_id = a.id
+      WHERE a.slug = ?
+    `;
+    const [countRows] = await pool.query<RowDataPacket[]>(countQuery, [authorSlug]);
+    const total = countRows[0].total;
+
+    // Get paginated posts
+    const query = `
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+      FROM posts p
+      JOIN authors a ON p.author_id = a.id
+      WHERE a.slug = ?
+      ORDER BY p.date DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      content: string;
+      views: number;
+      author_name: string | null;
+      author_slug: string | null;
+      author_avatar: string | null;
+      author_role: string | null;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(query, [authorSlug, limit, offset]);
+    const posts = rows.map((row) => ({
+      ...row,
+      author: row.author_name ? {
+        name: row.author_name,
+        slug: row.author_slug!,
+        avatar: row.author_avatar!,
+        role: row.author_role!
+      } : undefined
+    })) as Post[];
+
+    return { posts, total };
+  } catch (error) {
+    console.error(`Error fetching paginated posts for author ${authorSlug}:`, error);
+    return { posts: [], total: 0 };
   }
 }
