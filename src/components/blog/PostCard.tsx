@@ -37,7 +37,7 @@ export default function PostCard({ title, excerpt, date, slug, category, readTim
                 </Link>
             </h3>
 
-            <p className="flex-1 text-sm leading-relaxed text-gray-500">
+            <p className="flex-1 text-sm leading-relaxed text-gray-500 line-clamp-4">
                 {excerpt}
             </p>
 

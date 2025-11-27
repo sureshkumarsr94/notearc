@@ -53,7 +53,7 @@ export default async function Home() {
             <div className="hidden sm:block h-px flex-1 bg-gray-200 mx-8 mb-2"></div>
             <Link
               href="/blog"
-              className="group hidden sm:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-orange-600 transition-all duration-300 mb-1 px-4 py-2 rounded-full hover:bg-orange-50"
+              className="group flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-orange-600 transition-all duration-300 mb-1 px-4 py-2 rounded-full hover:bg-orange-50"
             >
               View all
               <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
@@ -86,7 +86,7 @@ export default async function Home() {
             <div className="hidden sm:block h-px flex-1 bg-gray-200 mx-8 mb-2"></div>
             <Link
               href="/blog"
-              className="group hidden sm:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 mb-1 px-4 py-2 rounded-full hover:bg-blue-50"
+              className="group flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-orange-600 transition-all duration-300 mb-1 px-4 py-2 rounded-full hover:bg-orange-50"
             >
               View all
               <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
