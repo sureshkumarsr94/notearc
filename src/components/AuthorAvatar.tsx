@@ -24,7 +24,7 @@ export default function AuthorAvatar({ name, src, className = '' }: AuthorAvatar
     if (!src || imageError) {
         return (
             <div
-                className={`flex items-center justify-center bg-primary-100 text-primary-700 font-bold uppercase ${className}`}
+                className={`flex items-center justify-center bg-orange-100 text-orange-600 font-bold uppercase rounded-full ${className}`}
                 aria-label={name}
             >
                 {initials}
@@ -33,13 +33,15 @@ export default function AuthorAvatar({ name, src, className = '' }: AuthorAvatar
     }
 
     return (
-        <Image
-            src={src}
-            alt={name}
-            fill
-            className="object-cover"
-            onError={() => setImageError(true)}
-            sizes="(max-width: 768px) 100px, 200px"
-        />
+        <div className={`relative overflow-hidden rounded-full ${className}`}>
+            <Image
+                src={src}
+                alt={name}
+                fill
+                className="object-cover"
+                onError={() => setImageError(true)}
+                sizes="(max-width: 768px) 100px, 200px"
+            />
+        </div>
     );
 }

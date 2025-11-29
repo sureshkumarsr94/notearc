@@ -13,45 +13,96 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
         async signIn({ user, account }) {
-            console.log('SignIn callback triggered', { provider: account?.provider, userId: user.id, email: user.email });
+            console.log('SignIn callback triggered', {
+                provider: account?.provider,
+                userId: account?.providerAccountId,
+                email: user.email,
+            });
 
-            if (account?.provider === "google") {
-                try {
-                    console.log('Checking if user exists in database...');
-                    const source = account.provider; // 'google'
-                    const sourceId = user.id;
-
-                    // Check if user exists
-                    const [rows] = await pool.query<RowDataPacket[]>(
-                        "SELECT * FROM users WHERE source = ? AND source_id = ?",
-                        [source, sourceId]
-                    );
-
-                    if (rows.length === 0) {
-                        console.log('User not found, creating new user...');
-                        // Create new user
-                        await pool.query(
-                            "INSERT INTO users (name, email, image, source, source_id) VALUES (?, ?, ?, ?, ?)",
-                            [user.name, user.email, user.image, source, sourceId]
-                        );
-                        console.log('User created successfully!');
-                    } else {
-                        console.log('User found, updating...');
-                        // Update existing user
-                        await pool.query(
-                            "UPDATE users SET name = ?, image = ? WHERE source = ? AND source_id = ?",
-                            [user.name, user.image, source, sourceId]
-                        );
-                        console.log('User updated successfully!');
-                    }
-                    return true;
-                } catch (error) {
-                    console.error("Error saving user to database:", error);
-                    // Allow login even if database save fails
-                    return true;
-                }
+            if (!user.email) {
+                console.log('No email provided, skipping DB save');
+                return true;
             }
-            return true;
+
+            try {
+                console.log('Checking if user exists in database...');
+                const [existingUsers] = await pool.query<RowDataPacket[]>(
+                    "SELECT * FROM users WHERE source = ? AND source_id = ?",
+                    [account?.provider, account?.providerAccountId]
+                );
+
+                if (existingUsers.length === 0) {
+                    console.log('User not found, creating new user...');
+
+                    // Generate slug from name
+                    const baseName = user.name || user.email?.split('@')[0] || 'user';
+                    let slug = baseName
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+
+                    // Check for slug uniqueness and add number if needed
+                    let finalSlug = slug;
+                    let counter = 1;
+                    while (true) {
+                        const [slugCheck] = await pool.query<RowDataPacket[]>(
+                            "SELECT id FROM users WHERE slug = ?",
+                            [finalSlug]
+                        );
+                        if (slugCheck.length === 0) break;
+                        finalSlug = `${slug}-${counter}`;
+                        counter++;
+                    }
+
+                    await pool.query(
+                        "INSERT INTO users (email, name, image, source, source_id, slug, role) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        [user.email, user.name, user.image, account?.provider, account?.providerAccountId, finalSlug, 'Author']
+                    );
+                    console.log('User created successfully with slug:', finalSlug);
+                } else {
+                    console.log('User already exists, updating...');
+                    const existingUser = existingUsers[0];
+
+                    // If user doesn't have a slug, generate one
+                    if (!existingUser.slug) {
+                        console.log('Generating slug for existing user...');
+                        const baseName = user.name || user.email?.split('@')[0] || 'user';
+                        let slug = baseName
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-+|-+$/g, '');
+
+                        let finalSlug = slug;
+                        let counter = 1;
+                        while (true) {
+                            const [slugCheck] = await pool.query<RowDataPacket[]>(
+                                "SELECT id FROM users WHERE slug = ?",
+                                [finalSlug]
+                            );
+                            if (slugCheck.length === 0) break;
+                            finalSlug = `${slug}-${counter}`;
+                            counter++;
+                        }
+
+                        await pool.query(
+                            "UPDATE users SET name = ?, image = ?, slug = ? WHERE id = ?",
+                            [user.name, user.image, finalSlug, existingUser.id]
+                        );
+                        console.log('User updated with slug:', finalSlug);
+                    } else {
+                        await pool.query(
+                            "UPDATE users SET name = ?, image = ? WHERE id = ?",
+                            [user.name, user.image, existingUser.id]
+                        );
+                        console.log('User updated');
+                    }
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error in signIn callback:', error);
+                return true;
+            }
         },
         async session({ session, token }) {
             console.log('Session callback triggered', { email: session.user?.email });
