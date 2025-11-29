@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -13,17 +13,17 @@ interface Post {
 }
 
 export default function SearchBar() {
-    const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
+                setShowResults(false);
             }
         };
 
@@ -43,6 +43,7 @@ export default function SearchBar() {
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
                 setResults(data.posts);
+                setShowResults(true);
             } catch (error) {
                 console.error('Search error:', error);
             } finally {
@@ -56,51 +57,44 @@ export default function SearchBar() {
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && query) {
-            setIsOpen(false);
+            setShowResults(false);
             router.push(`/blog?search=${encodeURIComponent(query)}`);
         }
     };
 
     return (
         <div className="relative" ref={searchRef}>
-            <div className={`flex items-center transition-all duration-300 ${isOpen ? 'w-64' : 'w-10'}`}>
-                {isOpen ? (
-                    <div className="relative w-full">
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Search articles..."
-                            className="w-full rounded-full border border-gray-200 bg-white py-2 pl-4 pr-10 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                            autoFocus
-                        />
-                        <button
-                            onClick={() => {
-                                setIsOpen(false);
-                                setQuery('');
-                            }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                ) : (
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => query.length >= 2 && setShowResults(true)}
+                    placeholder="Search articles..."
+                    className="w-64 rounded-full border border-gray-200 bg-gray-50 py-2 pl-10 pr-10 text-sm outline-none transition-all focus:border-gray-300 focus:bg-white focus:ring-2 focus:ring-gray-100"
+                />
+                {query && (
                     <button
-                        onClick={() => setIsOpen(true)}
-                        className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100"
-                        aria-label="Open search"
+                        type="button"
+                        onClick={() => {
+                            setQuery('');
+                            setShowResults(false);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-gray-200 transition-colors"
+                        aria-label="Clear search"
                     >
-                        <Search className="h-5 w-5" />
+                        <X className="h-3 w-3 text-gray-500" />
                     </button>
                 )}
             </div>
 
-            {isOpen && query.length >= 2 && (
+            {showResults && query.length >= 2 && (
                 <div className="absolute right-0 top-12 z-50 w-80 rounded-xl border border-gray-100 bg-white p-2 shadow-lg">
                     {isLoading ? (
                         <div className="flex justify-center p-4">
-                            <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                            <Loader2 className="h-6 w-6 animate-spin text-[#FF5733]" />
                         </div>
                     ) : results.length > 0 ? (
                         <ul className="max-h-96 overflow-y-auto">
@@ -108,7 +102,7 @@ export default function SearchBar() {
                                 <li key={post.slug}>
                                     <Link
                                         href={`/blog/${post.slug}`}
-                                        onClick={() => setIsOpen(false)}
+                                        onClick={() => setShowResults(false)}
                                         className="block rounded-lg p-3 hover:bg-gray-50"
                                     >
                                         <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{post.title}</h4>

@@ -11,6 +11,7 @@ export interface Post {
   content: string;
   views: number;
   author?: {
+    id: number;
     name: string;
     slug: string;
     avatar: string;
@@ -22,9 +23,9 @@ export async function getAllPosts(): Promise<Post[]> {
   try {
     const query = `
       SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
-             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+             a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
-      LEFT JOIN authors a ON p.author_id = a.id
+      LEFT JOIN users a ON p.author_id = a.id
     `;
     interface PostRow extends RowDataPacket {
       slug: string;
@@ -35,6 +36,7 @@ export async function getAllPosts(): Promise<Post[]> {
       category: string;
       content: string;
       views: number;
+      author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
       author_avatar: string | null;
@@ -45,6 +47,7 @@ export async function getAllPosts(): Promise<Post[]> {
     const posts = rows.map((row) => ({
       ...row,
       author: row.author_name ? {
+        id: row.author_id!,
         name: row.author_name,
         slug: row.author_slug!,
         avatar: row.author_avatar!,
@@ -62,9 +65,9 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
     const query = `
       SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
-             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+             a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
-      LEFT JOIN authors a ON p.author_id = a.id
+      LEFT JOIN users a ON p.author_id = a.id
       WHERE p.slug = ?
     `;
     interface PostRow extends RowDataPacket {
@@ -76,6 +79,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
       category: string;
       content: string;
       views: number;
+      author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
       author_avatar: string | null;
@@ -89,6 +93,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     return {
       ...row,
       author: row.author_name ? {
+        id: row.author_id!,
         name: row.author_name,
         slug: row.author_slug!,
         avatar: row.author_avatar!,
@@ -174,7 +179,7 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
     const countQuery = `
       SELECT COUNT(*) as total 
       FROM posts p
-      JOIN authors a ON p.author_id = a.id
+      JOIN users a ON p.author_id = a.id
       WHERE a.slug = ?
     `;
     const [countRows] = await pool.query<RowDataPacket[]>(countQuery, [authorSlug]);
@@ -183,9 +188,9 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
     // Get paginated posts
     const query = `
       SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
-             a.name as author_name, a.slug as author_slug, a.avatar as author_avatar, a.role as author_role
+             a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
-      JOIN authors a ON p.author_id = a.id
+      JOIN users a ON p.author_id = a.id
       WHERE a.slug = ?
       ORDER BY p.date DESC
       LIMIT ? OFFSET ?
@@ -200,6 +205,7 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
       category: string;
       content: string;
       views: number;
+      author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
       author_avatar: string | null;
@@ -210,6 +216,7 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
     const posts = rows.map((row) => ({
       ...row,
       author: row.author_name ? {
+        id: row.author_id!,
         name: row.author_name,
         slug: row.author_slug!,
         avatar: row.author_avatar!,

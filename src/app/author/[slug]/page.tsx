@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Twitter, Linkedin, ChevronLeft, ChevronRight } from 'lucide-react';
 import AuthorAvatar from '@/components/AuthorAvatar';
+import FollowButton from '@/components/FollowButton';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -60,6 +61,9 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                         <p className="mb-6 max-w-2xl text-gray-600">
                             {author.bio}
                         </p>
+                        <div className="mb-4">
+                            <FollowButton authorId={author.id} />
+                        </div>
                         <div className="flex items-center justify-center gap-4 md:justify-start">
                             {author.social_twitter && (
                                 <a
