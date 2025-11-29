@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,6 +71,8 @@ export const metadata: Metadata = {
   },
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,6 +90,12 @@ export default function RootLayout({
           </main>
           <Footer />
         </Providers>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3921845751221806"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
