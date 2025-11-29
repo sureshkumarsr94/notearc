@@ -23,7 +23,7 @@ export default async function AuthorsPage() {
                     <div className="grid gap-6 md:grid-cols-2">
                         {authors.map((author) => (
                             <div key={author.id} className="flex gap-4 p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors bg-white">
-                                <Link href={`/author/${author.slug}`}>
+                                <Link href={`/author/${author.slug.trim()}`}>
                                     <AuthorAvatar
                                         name={author.name}
                                         src={author.avatar}
@@ -33,7 +33,7 @@ export default async function AuthorsPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2 mb-1">
                                         <Link
-                                            href={`/author/${author.slug}`}
+                                            href={`/author/${author.slug.trim()}`}
                                             className="font-semibold text-gray-900 hover:text-gray-700 transition-colors truncate"
                                         >
                                             {author.name}

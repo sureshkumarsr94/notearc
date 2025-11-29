@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PageProps) {
     }
 
     const siteUrl = 'https://www.notearc.info';
-    const postUrl = `${siteUrl} /blog/${post.slug} `;
+    const postUrl = `${siteUrl}/blog/${post.slug}`;
 
     return {
         title: `${post.title} | NoteArc`,
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                     {post.author && (
                         <div className="mb-8 flex items-center justify-between gap-4 border-b border-gray-100 pb-8">
                             <div className="flex items-center gap-4">
-                                <Link href={`/ author / ${post.author.slug} `} className="relative h-12 w-12 overflow-hidden rounded-full">
+                                <Link href={`/author/${post.author.slug.trim()}`} className="relative h-12 w-12 overflow-hidden rounded-full">
                                     <AuthorAvatar
                                         name={post.author.name}
                                         src={post.author.avatar}
@@ -128,7 +128,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                                     />
                                 </Link>
                                 <div>
-                                    <Link href={`/ author / ${post.author.slug} `} className="font-medium text-gray-900 hover:text-primary-600">
+                                    <Link href={`/author/${post.author.slug.trim()}`} className="font-medium text-gray-900 hover:text-primary-600">
                                         {post.author.name}
                                     </Link>
                                     <p className="text-sm text-gray-500">{post.author.role}</p>

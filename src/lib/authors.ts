@@ -44,7 +44,19 @@ export async function getAllAuthors(): Promise<Author[]> {
 export async function getAuthorBySlug(slug: string): Promise<Author | undefined> {
     try {
         const [rows] = await pool.query<RowDataPacket[]>(
-            'SELECT id, name, slug, bio, image as avatar, role, social_twitter, social_linkedin FROM users WHERE slug = ?',
+            `SELECT 
+                u.id, 
+                u.name, 
+                u.slug, 
+                u.bio, 
+                u.image as avatar, 
+                u.role, 
+                u.social_twitter, 
+                u.social_linkedin,
+                (SELECT COUNT(*) FROM posts p WHERE p.author_id = u.id) as postCount,
+                (SELECT COALESCE(SUM(views), 0) FROM posts p WHERE p.author_id = u.id) as totalViews
+            FROM users u 
+            WHERE u.slug = ?`,
             [slug]
         );
         if (rows.length === 0) return undefined;

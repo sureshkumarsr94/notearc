@@ -20,6 +20,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
     const limit = 9;
 
     const author = await getAuthorBySlug(slug);
+    console.log('AuthorPage debug:', { slug, authorFound: !!author, authorName: author?.name });
 
     if (!author) {
         notFound();

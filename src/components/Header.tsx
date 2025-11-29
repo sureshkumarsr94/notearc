@@ -75,7 +75,7 @@ export default function Header() {
                                         <span>Following</span>
                                     </Link>
                                     <button
-                                        onClick={() => signOut()}
+                                        onClick={() => signOut({ callbackUrl: '/' })}
                                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
                                     >
                                         <LogOut className="h-4 w-4" />
@@ -126,7 +126,7 @@ export default function Header() {
                                         <span className="font-medium text-gray-900">{session.user?.name}</span>
                                     </div>
                                     <button
-                                        onClick={() => signOut()}
+                                        onClick={() => signOut({ callbackUrl: '/' })}
                                         className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
                                     >
                                         <LogOut className="h-4 w-4" />
