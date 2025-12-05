@@ -2,13 +2,14 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 interface SaveButtonProps {
     postSlug: string;
+    variant?: 'default' | 'minimal';
 }
 
-export default function SaveButton({ postSlug }: SaveButtonProps) {
+export default function SaveButton({ postSlug, variant = 'default' }: SaveButtonProps) {
     const { data: session } = useSession();
     const [isSaved, setIsSaved] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -54,18 +55,44 @@ export default function SaveButton({ postSlug }: SaveButtonProps) {
         }
     };
 
+    // Minimal variant - just icon with tooltip-like feel
+    if (variant === 'minimal') {
+        return (
+            <button
+                onClick={handleToggleSave}
+                disabled={isLoading}
+                className={`group relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${isSaved
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg hover:shadow-xl hover:scale-105'
+                        : 'bg-white/80 backdrop-blur-sm text-gray-500 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-500 hover:shadow-lg'
+                    }`}
+                aria-label={isSaved ? 'Unsave post' : 'Save post'}
+            >
+                {isSaved ? (
+                    <BookmarkCheck className="h-5 w-5" />
+                ) : (
+                    <Bookmark className="h-5 w-5" />
+                )}
+            </button>
+        );
+    }
+
+    // Default variant - button with text
     return (
         <button
             onClick={handleToggleSave}
             disabled={isLoading}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${isSaved
-                    ? 'bg-[#FF5733] text-white hover:bg-[#E64A2E]'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            className={`group flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 ${isSaved
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                    : 'bg-white/80 backdrop-blur-sm text-gray-700 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600 hover:shadow-lg'
                 }`}
             aria-label={isSaved ? 'Unsave post' : 'Save post'}
         >
-            <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-            <span>{isSaved ? 'Saved' : 'Save'}</span>
+            {isSaved ? (
+                <BookmarkCheck className="h-4 w-4" />
+            ) : (
+                <Bookmark className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+            )}
+            <span>{isSaved ? 'Saved' : 'Save Story'}</span>
         </button>
     );
 }
