@@ -10,6 +10,7 @@ export interface Post {
   category: string;
   content: string;
   views: number;
+  image?: string;
   author?: {
     id: number;
     name: string;
@@ -22,10 +23,11 @@ export interface Post {
 export async function getAllPosts(): Promise<Post[]> {
   try {
     const query = `
-      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views, p.image,
              a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
+      WHERE p.status = 'published' OR p.status IS NULL
     `;
     interface PostRow extends RowDataPacket {
       slug: string;
@@ -36,6 +38,7 @@ export async function getAllPosts(): Promise<Post[]> {
       category: string;
       content: string;
       views: number;
+      image: string | null;
       author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
@@ -64,7 +67,7 @@ export async function getAllPosts(): Promise<Post[]> {
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
     const query = `
-      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views, p.image,
              a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
@@ -79,6 +82,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
       category: string;
       content: string;
       views: number;
+      image: string | null;
       author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
@@ -116,7 +120,7 @@ export async function incrementViewCount(slug: string): Promise<void> {
 
 export async function getPopularPosts(): Promise<Post[]> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, content, views FROM posts ORDER BY views DESC LIMIT 4');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, content, views, image FROM posts ORDER BY views DESC LIMIT 4');
     return rows as unknown as Post[];
   } catch (error) {
     console.error('Error fetching popular posts:', error);
@@ -127,7 +131,7 @@ export async function getPopularPosts(): Promise<Post[]> {
 export async function getLatestPosts(limit: number): Promise<Post[]> {
   try {
     // Exclude content for lighter query, fetch all to sort by date correctly in JS
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, views FROM posts');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, views, image FROM posts');
     const posts = rows as unknown as Post[];
     return posts
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -140,7 +144,7 @@ export async function getLatestPosts(limit: number): Promise<Post[]> {
 
 export async function getPaginatedPosts(page: number, limit: number): Promise<{ posts: Post[], total: number }> {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, views FROM posts');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT slug, title, excerpt, date, readTime, category, views, image FROM posts');
     const allPosts = rows as unknown as Post[];
     const sortedPosts = allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -162,7 +166,7 @@ export async function searchPosts(query: string): Promise<Post[]> {
   try {
     const searchTerm = `%${query}%`;
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT slug, title, excerpt, date, readTime, category, views FROM posts WHERE title LIKE ? OR content LIKE ? OR excerpt LIKE ?',
+      'SELECT slug, title, excerpt, date, readTime, category, views, image FROM posts WHERE title LIKE ? OR content LIKE ? OR excerpt LIKE ?',
       [searchTerm, searchTerm, searchTerm]
     );
     return rows as unknown as Post[];
@@ -187,7 +191,7 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
 
     // Get paginated posts
     const query = `
-      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views,
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views, p.image,
              a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
       JOIN users a ON p.author_id = a.id
@@ -205,6 +209,7 @@ export async function getPaginatedPostsByAuthor(authorSlug: string, page: number
       category: string;
       content: string;
       views: number;
+      image: string | null;
       author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
@@ -249,7 +254,7 @@ export async function getPostsByCategory(categorySlug: string, page: number = 1,
     // Get paginated posts
     const offset = (page - 1) * limit;
     const query = `
-      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.views,
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.views, p.image,
              a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
@@ -266,6 +271,7 @@ export async function getPostsByCategory(categorySlug: string, page: number = 1,
       readTime: string;
       category: string;
       views: number;
+      image: string | null;
       author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
@@ -313,7 +319,7 @@ export async function getAllCategories(): Promise<{ name: string, slug: string, 
 export async function getRelatedPosts(currentSlug: string, category: string, limit: number = 3): Promise<Post[]> {
   try {
     const query = `
-      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.views,
+      SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.views, p.image,
              a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
@@ -330,6 +336,7 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
       readTime: string;
       category: string;
       views: number;
+      image: string | null;
       author_id: number | null;
       author_name: string | null;
       author_slug: string | null;
@@ -357,3 +364,184 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
   }
 }
 
+// Generate a URL-friendly slug from a title
+export async function generateSlug(title: string): Promise<string> {
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  let finalSlug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      'SELECT id FROM posts WHERE slug = ?',
+      [finalSlug]
+    );
+    if (rows.length === 0) break;
+    finalSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  return finalSlug;
+}
+
+// Calculate estimated read time based on content
+export function calculateReadTime(content: string): string {
+  // Strip HTML tags for word counting
+  const textContent = content.replace(/<[^>]*>/g, '');
+  const wordCount = textContent.split(/\s+/).filter(word => word.length > 0).length;
+  const wordsPerMinute = 200;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+  return minutes <= 1 ? '1 min read' : `${minutes} min read`;
+}
+
+// Create a new post
+export interface CreatePostInput {
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  image: string;
+  status: 'draft' | 'published';
+}
+
+export async function createPost(postData: CreatePostInput, authorId: number): Promise<{ success: boolean; slug?: string; error?: string }> {
+  try {
+    const slug = await generateSlug(postData.title);
+    const readTime = calculateReadTime(postData.content);
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    await pool.query(
+      `INSERT INTO posts (slug, title, excerpt, date, readTime, category, content, views, image, author_id, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+      [slug, postData.title, postData.excerpt, date, readTime, postData.category, postData.content, postData.image, authorId, postData.status]
+    );
+
+    return { success: true, slug };
+  } catch (error) {
+    console.error('Error creating post:', error);
+    return { success: false, error: 'Failed to create post' };
+  }
+}
+
+// Update an existing post
+export async function updatePost(slug: string, postData: Partial<CreatePostInput>, authorId: number): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Verify the post belongs to this author
+    const [rows] = await pool.query<RowDataPacket[]>(
+      'SELECT id FROM posts WHERE slug = ? AND author_id = ?',
+      [slug, authorId]
+    );
+
+    if (rows.length === 0) {
+      return { success: false, error: 'Post not found or unauthorized' };
+    }
+
+    // Build dynamic update query
+    const updates: string[] = [];
+    const values: (string | number)[] = [];
+
+    if (postData.title) {
+      updates.push('title = ?');
+      values.push(postData.title);
+    }
+    if (postData.excerpt) {
+      updates.push('excerpt = ?');
+      values.push(postData.excerpt);
+    }
+    if (postData.content) {
+      updates.push('content = ?');
+      values.push(postData.content);
+      updates.push('readTime = ?');
+      values.push(calculateReadTime(postData.content));
+    }
+    if (postData.category) {
+      updates.push('category = ?');
+      values.push(postData.category);
+    }
+    if (postData.image) {
+      updates.push('image = ?');
+      values.push(postData.image);
+    }
+    if (postData.status) {
+      updates.push('status = ?');
+      values.push(postData.status);
+    }
+
+    if (updates.length === 0) {
+      return { success: true }; // Nothing to update
+    }
+
+    values.push(slug);
+    await pool.query(
+      `UPDATE posts SET ${updates.join(', ')} WHERE slug = ?`,
+      values
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating post:', error);
+    return { success: false, error: 'Failed to update post' };
+  }
+}
+
+// Get posts by a specific user (for "My Posts" feature)
+export async function getUserPosts(authorId: number): Promise<Post[]> {
+  try {
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      content: string;
+      views: number;
+      image: string | null;
+      status: string;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(
+      `SELECT slug, title, excerpt, date, readTime, category, content, views, image, status
+       FROM posts WHERE author_id = ? ORDER BY created_at DESC`,
+      [authorId]
+    );
+
+    return rows as unknown as Post[];
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    return [];
+  }
+}
+
+// Get a post for editing (includes draft posts for the author)
+export async function getPostForEdit(slug: string, authorId: number): Promise<Post | null> {
+  try {
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      content: string;
+      views: number;
+      image: string | null;
+      status: string;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(
+      `SELECT slug, title, excerpt, date, readTime, category, content, views, image, status
+       FROM posts WHERE slug = ? AND author_id = ?`,
+      [slug, authorId]
+    );
+
+    if (rows.length === 0) return null;
+    return rows[0] as unknown as Post;
+  } catch (error) {
+    console.error('Error fetching post for edit:', error);
+    return null;
+  }
+}

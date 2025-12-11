@@ -7,8 +7,13 @@ CREATE TABLE IF NOT EXISTS posts (
     readTime VARCHAR(50) NOT NULL,
     category VARCHAR(100) NOT NULL,
     content LONGTEXT NOT NULL,
+    views INT DEFAULT 0,
+    image VARCHAR(500),
+    author_id INT,
+    status ENUM('draft', 'published') DEFAULT 'draft',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS subscribers (

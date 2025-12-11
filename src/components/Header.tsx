@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Menu, X, LogIn, LogOut, User, Users, Bookmark, ChevronDown, Sparkles, BookOpen, PenTool } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User, Users, Bookmark, ChevronDown, Sparkles, BookOpen, PenTool, PenLine } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -10,6 +10,7 @@ const navLinks = [
     { name: 'Blog', href: '/blog', icon: BookOpen },
     { name: 'Authors', href: '/authors', icon: PenTool },
 ];
+
 
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -39,8 +40,8 @@ export default function Header() {
 
     return (
         <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-                ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm'
-                : 'bg-white/60 backdrop-blur-md'
+            ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm'
+            : 'bg-white/60 backdrop-blur-md'
             }`}>
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
                 {/* Logo */}
@@ -82,8 +83,8 @@ export default function Header() {
                             <button
                                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                                 className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-all duration-200 ${isProfileMenuOpen
-                                        ? 'bg-orange-50 ring-2 ring-orange-200'
-                                        : 'hover:bg-gray-100'
+                                    ? 'bg-orange-50 ring-2 ring-orange-200'
+                                    : 'hover:bg-gray-100'
                                     }`}
                             >
                                 {session.user?.image ? (
@@ -119,6 +120,24 @@ export default function Header() {
 
                                         {/* Menu Items */}
                                         <div className="p-2">
+                                            <Link
+                                                href="/write"
+                                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-colors"
+                                            >
+                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500">
+                                                    <PenLine className="h-4 w-4 text-white" />
+                                                </div>
+                                                <span className="font-medium">Write Story</span>
+                                            </Link>
+                                            <Link
+                                                href="/my-posts"
+                                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100">
+                                                    <PenTool className="h-4 w-4 text-purple-600" />
+                                                </div>
+                                                <span>My Posts</span>
+                                            </Link>
                                             <Link
                                                 href="/saved"
                                                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -223,6 +242,24 @@ export default function Header() {
                                             <p className="text-sm text-gray-500">{session.user?.email}</p>
                                         </div>
                                     </div>
+
+                                    <Link
+                                        href="/write"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 rounded-xl px-4 py-3 bg-gradient-to-r from-orange-50 to-amber-50 text-gray-700 hover:from-orange-100 hover:to-amber-100 transition-colors"
+                                    >
+                                        <PenLine className="h-5 w-5 text-orange-500" />
+                                        <span className="font-medium">Write Story</span>
+                                    </Link>
+
+                                    <Link
+                                        href="/my-posts"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <PenTool className="h-5 w-5 text-purple-500" />
+                                        <span>My Posts</span>
+                                    </Link>
 
                                     <Link
                                         href="/saved"
