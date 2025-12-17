@@ -1,5 +1,4 @@
 import { getPostBySlug, getAllPosts, getRelatedPosts } from '@/lib/posts';
-import { getSignedUrlFromS3Url } from '@/lib/s3';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, Tag, Eye, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
@@ -88,25 +87,6 @@ export default async function BlogPostPage({ params }: PageProps) {
         notFound();
     }
 
-    // Generate image URL - supports both local paths and S3 URLs
-    let imageUrl: string | null = null;
-    if (post.image) {
-        if (post.image.startsWith('/')) {
-            // Local image path - use directly
-            imageUrl = post.image;
-        } else if (post.image.includes('s3.') && post.image.includes('amazonaws.com')) {
-            // S3 URL - generate signed URL
-            try {
-                imageUrl = await getSignedUrlFromS3Url(post.image, 7200); // 2 hours expiry
-            } catch (error) {
-                console.error('Error generating signed URL for post image:', error);
-            }
-        } else {
-            // Other URLs - use directly
-            imageUrl = post.image;
-        }
-    }
-
     // Fetch related posts
     let relatedPosts: any[] = [];
     try {
@@ -166,23 +146,6 @@ export default async function BlogPostPage({ params }: PageProps) {
                     </div>
                 </div>
             </header>
-
-            {/* Cover Image */}
-            {imageUrl && (
-                <div className="container mx-auto px-4 md:px-6 -mt-4 mb-8">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="group relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-500 hover:shadow-orange-200/50 hover:shadow-3xl">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10 transition-opacity duration-500 group-hover:from-black/10" />
-                            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-amber-500/0 to-orange-500/0 z-10 transition-all duration-500 group-hover:from-orange-500/10 group-hover:via-amber-500/5 group-hover:to-orange-500/10" />
-                            <img
-                                src={imageUrl}
-                                alt={post.title}
-                                className="w-full h-[300px] md:h-[450px] object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
 
 
             {/* View Counter (hidden) */}
