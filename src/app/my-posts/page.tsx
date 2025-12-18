@@ -174,26 +174,15 @@ export default function MyPostsPage() {
                                 key={post.slug}
                                 className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
                             >
-                                <div className="flex gap-4">
-                                    {/* Thumbnail */}
-                                    {post.image && (
-                                        <div className="hidden sm:block flex-shrink-0">
-                                            <img
-                                                src={post.image}
-                                                alt={post.title}
-                                                className="w-24 h-24 object-cover rounded-xl"
-                                            />
-                                        </div>
-                                    )}
-
+                                <div>
                                     {/* Content */}
-                                    <div className="flex-grow min-w-0">
+                                    <div>
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${post.status === 'draft'
-                                                            ? 'bg-yellow-100 text-yellow-700'
-                                                            : 'bg-green-100 text-green-700'
+                                                        ? 'bg-yellow-100 text-yellow-700'
+                                                        : 'bg-green-100 text-green-700'
                                                         }`}>
                                                         {post.status === 'draft' ? 'Draft' : 'Published'}
                                                     </span>

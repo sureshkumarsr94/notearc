@@ -32,7 +32,7 @@ export async function getAllAuthors(): Promise<Author[]> {
             LEFT JOIN posts p ON u.id = p.author_id
             WHERE u.slug IS NOT NULL
             GROUP BY u.id
-            HAVING postCount >= 1`
+            HAVING COUNT(p.id) >= 1`
         );
         return rows as unknown as Author[];
     } catch (error) {
