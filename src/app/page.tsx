@@ -4,6 +4,7 @@ import HeroSection from '@/components/home/HeroSection';
 import FeaturedPosts from '@/components/home/FeaturedPosts';
 import CategoryList from '@/components/home/CategoryList';
 import Newsletter from '@/components/home/Newsletter';
+import AdUnit from '@/components/AdUnit';
 import { Clock, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,6 +37,9 @@ export default async function Home() {
 
         {/* Featured/Trending Posts */}
         <FeaturedPosts posts={popularPosts} />
+
+        {/* Ad Unit - After Must Read Stories */}
+        <AdUnit adSlot="7512503324" adFormat="horizontal" />
 
         {/* Latest Posts */}
         <section className="py-16 md:py-20">
@@ -77,9 +81,13 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Ad Unit - After Just Published */}
+        <AdUnit adSlot="7512503324" adFormat="horizontal" />
+
         {/* Newsletter */}
         <Newsletter />
       </div>
     </div>
   );
 }
+
