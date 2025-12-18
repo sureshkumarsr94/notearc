@@ -214,7 +214,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                                     </Link>
                                     <p className="text-orange-600 font-medium mb-2">{post.author.role}</p>
                                     <p className="text-gray-600 mb-4">
-                                        {(post.author as any)?.bio || `${post.author.name} is a passionate writer sharing insights and stories on NoteArc.`}
+                                        {post.author.bio || `${post.author.name} is a passionate writer sharing insights and stories on NoteArc.`}
                                     </p>
 
                                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">

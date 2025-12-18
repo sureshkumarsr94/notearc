@@ -17,6 +17,7 @@ export interface Post {
     slug: string;
     avatar: string;
     role: string;
+    bio?: string | null;
   };
 }
 
@@ -24,7 +25,7 @@ export async function getAllPosts(): Promise<Post[]> {
   try {
     const query = `
       SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views, p.image,
-             a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
+             a.id as author_id, a.name as author_name, COALESCE(a.alias_name, a.name) as author_display_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role, a.bio as author_bio
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
       WHERE p.status = 'published' OR p.status IS NULL
@@ -41,9 +42,11 @@ export async function getAllPosts(): Promise<Post[]> {
       image: string | null;
       author_id: number | null;
       author_name: string | null;
+      author_display_name: string | null;
       author_slug: string | null;
       author_avatar: string | null;
       author_role: string | null;
+      author_bio: string | null;
     }
 
     const [rows] = await pool.query<PostRow[]>(query);
@@ -51,10 +54,11 @@ export async function getAllPosts(): Promise<Post[]> {
       ...row,
       author: row.author_name ? {
         id: row.author_id!,
-        name: row.author_name,
+        name: row.author_display_name || row.author_name,
         slug: row.author_slug!,
         avatar: row.author_avatar!,
-        role: row.author_role!
+        role: row.author_role!,
+        bio: row.author_bio
       } : undefined
     })) as Post[];
     return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -68,7 +72,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
     const query = `
       SELECT p.slug, p.title, p.excerpt, p.date, p.readTime, p.category, p.content, p.views, p.image,
-             a.id as author_id, a.name as author_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role
+             a.id as author_id, a.name as author_name, COALESCE(a.alias_name, a.name) as author_display_name, a.slug as author_slug, a.image as author_avatar, a.role as author_role, a.bio as author_bio
       FROM posts p
       LEFT JOIN users a ON p.author_id = a.id
       WHERE p.slug = ?
@@ -85,9 +89,11 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
       image: string | null;
       author_id: number | null;
       author_name: string | null;
+      author_display_name: string | null;
       author_slug: string | null;
       author_avatar: string | null;
       author_role: string | null;
+      author_bio: string | null;
     }
 
     const [rows] = await pool.query<PostRow[]>(query, [slug]);
@@ -98,10 +104,11 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
       ...row,
       author: row.author_name ? {
         id: row.author_id!,
-        name: row.author_name,
+        name: row.author_display_name || row.author_name,
         slug: row.author_slug!,
         avatar: row.author_avatar!,
-        role: row.author_role!
+        role: row.author_role!,
+        bio: row.author_bio
       } : undefined
     } as Post;
   } catch (error) {
