@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -8,8 +8,6 @@ import {
     ArrowLeft,
     Save,
     Send,
-    ImagePlus,
-    X,
     Loader2,
     FileText,
     Sparkles,
@@ -73,14 +71,12 @@ export default function EditPostPage({ params }: PageProps) {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('');
     const [coverImage, setCoverImage] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState('');
     const [postStatus, setPostStatus] = useState<'draft' | 'published'>('draft');
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+
     const [saveMessage, setSaveMessage] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [notFound, setNotFound] = useState(false);
@@ -127,59 +123,7 @@ export default function EditPostPage({ params }: PageProps) {
         fetchPost();
     }, [slug, status]);
 
-    // Handle image file selection
-    const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    }, []);
 
-    // Upload image to S3
-    const uploadImage = async (): Promise<string | null> => {
-        if (!imageFile) {
-            if (coverImage) return coverImage;
-            return null;
-        }
-
-        setIsUploading(true);
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: imageFile.name,
-                    contentType: imageFile.type
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to get upload URL');
-            }
-
-            const { uploadUrl, publicUrl } = await response.json();
-
-            await fetch(uploadUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': imageFile.type },
-                body: imageFile,
-            });
-
-            setCoverImage(publicUrl);
-            return publicUrl;
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            setErrors(prev => ({ ...prev, image: 'Failed to upload image' }));
-            return null;
-        } finally {
-            setIsUploading(false);
-        }
-    };
 
     // Validate form
     const validateForm = (): boolean => {
@@ -189,7 +133,7 @@ export default function EditPostPage({ params }: PageProps) {
         if (!excerpt.trim()) newErrors.excerpt = 'Excerpt is required';
         if (!content.trim() || content === '<p><br></p>') newErrors.content = 'Content is required';
         if (!category) newErrors.category = 'Category is required';
-        if (!imageFile && !coverImage) newErrors.image = 'Cover image is required';
+
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -209,11 +153,6 @@ export default function EditPostPage({ params }: PageProps) {
         setSaveMessage('');
 
         try {
-            let imageUrl = coverImage;
-            if (imageFile) {
-                const uploadedUrl = await uploadImage();
-                if (uploadedUrl) imageUrl = uploadedUrl;
-            }
 
             const response = await fetch('/api/posts', {
                 method: 'PUT',
@@ -224,7 +163,7 @@ export default function EditPostPage({ params }: PageProps) {
                     excerpt: excerpt || 'Draft post',
                     content: content || '',
                     category: category || 'Other',
-                    image: imageUrl || '/images/placeholder.jpg',
+                    image: coverImage || '/images/placeholder.jpg',
                     status: publishStatus
                 }),
             });
@@ -323,8 +262,8 @@ export default function EditPostPage({ params }: PageProps) {
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg font-semibold text-gray-900">Edit Story</h1>
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${postStatus === 'published'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-yellow-100 text-yellow-700'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {postStatus === 'published' ? 'Published' : 'Draft'}
                                 </span>
@@ -370,55 +309,7 @@ export default function EditPostPage({ params }: PageProps) {
 
             {/* Main Editor */}
             <main className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Cover Image */}
-                <div className="mb-8">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Cover Image <span className="text-red-500">*</span>
-                    </label>
 
-                    {imagePreview || coverImage ? (
-                        <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-100">
-                            <img
-                                src={imagePreview || coverImage}
-                                alt="Cover preview"
-                                className="w-full h-full object-cover"
-                            />
-                            <button
-                                onClick={() => {
-                                    setImageFile(null);
-                                    setImagePreview('');
-                                    setCoverImage('');
-                                }}
-                                className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                            {isUploading && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <label className={`flex flex-col items-center justify-center w-full aspect-video rounded-2xl border-2 border-dashed cursor-pointer transition-colors ${errors.image ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-                            }`}>
-                            <div className="flex flex-col items-center justify-center py-12">
-                                <ImagePlus className={`h-12 w-12 mb-4 ${errors.image ? 'text-red-400' : 'text-gray-400'}`} />
-                                <p className={`text-sm ${errors.image ? 'text-red-600' : 'text-gray-600'}`}>
-                                    Click to upload cover image
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">PNG, JPG, WebP up to 5MB</p>
-                            </div>
-                            <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleImageSelect}
-                            />
-                        </label>
-                    )}
-                    {errors.image && <p className="mt-2 text-sm text-red-600">{errors.image}</p>}
-                </div>
 
                 {/* Title */}
                 <div className="mb-6">

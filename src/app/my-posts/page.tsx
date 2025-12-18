@@ -53,6 +53,14 @@ export default function MyPostsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [activeTab, setActiveTab] = useState<'published' | 'drafts'>('published');
+
+    // Filter posts based on active tab
+    const filteredPosts = posts.filter(post => {
+        if (activeTab === 'published') return post.status === 'published';
+        if (activeTab === 'drafts') return post.status === 'draft';
+        return true;
+    });
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -224,6 +232,36 @@ export default function MyPostsPage() {
                     </div>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex gap-2 mb-6">
+                    <button
+                        onClick={() => setActiveTab('published')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'published'
+                            ? 'bg-green-500 text-white shadow-md'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        Published
+                        <span className={`px-1.5 py-0.5 rounded-full text-xs ${activeTab === 'published' ? 'bg-green-600' : 'bg-gray-100'
+                            }`}>
+                            {stats.published}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('drafts')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'drafts'
+                            ? 'bg-yellow-500 text-white shadow-md'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        Drafts
+                        <span className={`px-1.5 py-0.5 rounded-full text-xs ${activeTab === 'drafts' ? 'bg-yellow-600' : 'bg-gray-100'
+                            }`}>
+                            {stats.drafts}
+                        </span>
+                    </button>
+                </div>
+
                 {/* Posts List */}
                 {stats.total === 0 ? (
                     <div className="text-center py-16">
@@ -240,6 +278,20 @@ export default function MyPostsPage() {
                             Write Your First Story
                         </Link>
                     </div>
+                ) : filteredPosts.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
+                            <FileText className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                            No {activeTab === 'published' ? 'published posts' : 'drafts'} yet
+                        </h2>
+                        <p className="text-gray-600">
+                            {activeTab === 'published'
+                                ? 'Publish a draft to see it here'
+                                : 'Save a story as draft to see it here'}
+                        </p>
+                    </div>
                 ) : (
                     <>
                         {/* Loading overlay for page changes */}
@@ -250,7 +302,7 @@ export default function MyPostsPage() {
                                 </div>
                             )}
 
-                            {posts.map((post) => (
+                            {filteredPosts.map((post) => (
                                 <div
                                     key={post.slug}
                                     className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
@@ -352,8 +404,8 @@ export default function MyPostsPage() {
                                                 key={page}
                                                 onClick={() => goToPage(page as number)}
                                                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${currentPage === page
-                                                        ? 'bg-orange-500 text-white'
-                                                        : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50'
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {page}
