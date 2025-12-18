@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Menu, X, LogIn, LogOut, User, Users, Bookmark, ChevronDown, Sparkles, BookOpen, PenTool, PenLine } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User, Users, Bookmark, ChevronDown, Sparkles, BookOpen, PenTool, PenLine, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -156,6 +156,15 @@ export default function Header() {
                                                 </div>
                                                 <span>Following</span>
                                             </Link>
+                                            <Link
+                                                href="/settings"
+                                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
+                                                    <Settings className="h-4 w-4 text-gray-600" />
+                                                </div>
+                                                <span>Settings</span>
+                                            </Link>
                                         </div>
 
                                         {/* Logout */}
@@ -277,6 +286,15 @@ export default function Header() {
                                     >
                                         <Users className="h-5 w-5 text-blue-500" />
                                         <span>Following</span>
+                                    </Link>
+
+                                    <Link
+                                        href="/settings"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <Settings className="h-5 w-5 text-gray-500" />
+                                        <span>Settings</span>
                                     </Link>
 
                                     <button

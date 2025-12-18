@@ -4,6 +4,8 @@ import { RowDataPacket } from 'mysql2';
 export interface Author {
     id: number;
     name: string;
+    alias_name?: string;
+    display_name: string; // alias_name if set, otherwise name
     slug: string;
     bio: string;
     avatar: string;
@@ -20,6 +22,8 @@ export async function getAllAuthors(): Promise<Author[]> {
             `SELECT 
                 u.id, 
                 u.name, 
+                u.alias_name,
+                COALESCE(u.alias_name, u.name) as display_name,
                 u.slug, 
                 u.bio, 
                 u.image as avatar, 
@@ -47,6 +51,8 @@ export async function getAuthorBySlug(slug: string): Promise<Author | undefined>
             `SELECT 
                 u.id, 
                 u.name, 
+                u.alias_name,
+                COALESCE(u.alias_name, u.name) as display_name,
                 u.slug, 
                 u.bio, 
                 u.image as avatar, 
@@ -66,3 +72,4 @@ export async function getAuthorBySlug(slug: string): Promise<Author | undefined>
         return undefined;
     }
 }
+

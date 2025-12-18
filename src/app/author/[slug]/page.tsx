@@ -80,11 +80,11 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                                 </div>
 
                                 <h1 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4" style={{ fontFamily: 'var(--font-outfit)' }}>
-                                    {author.name}
+                                    {author.display_name}
                                 </h1>
 
                                 <p className="text-lg text-gray-600 max-w-2xl mb-6">
-                                    {author.bio || `${author.name} is a passionate writer sharing insights and stories on NoteArc.`}
+                                    {author.bio || `${author.display_name} is a passionate writer sharing insights and stories on NoteArc.`}
                                 </p>
 
                                 {/* Stats Row */}
@@ -240,8 +240,8 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                                             key={pageNum}
                                             href={`/author/${slug}?page=${pageNum}`}
                                             className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium transition-all duration-300 ${pageNum === currentPage
-                                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                                                    : 'bg-white text-gray-600 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600'
+                                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
+                                                : 'bg-white text-gray-600 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600'
                                                 }`}
                                         >
                                             {pageNum}
@@ -272,7 +272,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                             No Articles Yet
                         </h3>
                         <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                            {author.name} hasn't published any articles yet. Check back soon!
+                            {author.display_name} hasn't published any articles yet. Check back soon!
                         </p>
                         <Link
                             href="/blog"

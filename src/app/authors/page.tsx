@@ -118,7 +118,7 @@ export default async function AuthorsPage() {
                                                     href={`/author/${author.slug.trim()}`}
                                                     className="block font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors truncate"
                                                 >
-                                                    {author.name}
+                                                    {author.display_name}
                                                 </Link>
                                                 <p className="text-sm text-orange-600 font-medium flex items-center gap-1">
                                                     <Award className="h-3.5 w-3.5" />
@@ -130,7 +130,7 @@ export default async function AuthorsPage() {
 
                                         {/* Bio */}
                                         <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">
-                                            {author.bio || `${author.name} is a passionate writer sharing insights and stories on NoteArc.`}
+                                            {author.bio || `${author.display_name} is a passionate writer sharing insights and stories on NoteArc.`}
                                         </p>
 
                                         {/* Stats */}
