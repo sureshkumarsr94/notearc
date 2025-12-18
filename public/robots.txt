@@ -1,5 +1,15 @@
+# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
 # Sitemap
 Sitemap: https://www.notearc.info/sitemap.xml
+
+# Disallow admin/protected paths
+Disallow: /api/
+Disallow: /write/
+Disallow: /my-posts/
+Disallow: /saved/
+
+# Crawl-delay for politeness
+Crawl-delay: 1

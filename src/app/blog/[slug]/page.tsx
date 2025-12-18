@@ -300,9 +300,11 @@ export default async function BlogPostPage({ params }: PageProps) {
                         '@type': 'Article',
                         headline: post.title,
                         description: post.excerpt,
+                        image: post.image || 'https://www.notearc.info/og-image.png',
                         author: {
                             '@type': 'Person',
                             name: post.author?.name || 'NoteArc',
+                            url: post.author?.slug ? `https://www.notearc.info/author/${post.author.slug}` : 'https://www.notearc.info',
                         },
                         publisher: {
                             '@type': 'Organization',
@@ -312,6 +314,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                                 url: 'https://www.notearc.info/logo.png',
                             },
                         },
+                        url: `https://www.notearc.info/blog/${post.slug}`,
                         datePublished: new Date(post.date).toISOString(),
                         dateModified: new Date(post.date).toISOString(),
                         mainEntityOfPage: {
@@ -319,7 +322,44 @@ export default async function BlogPostPage({ params }: PageProps) {
                             '@id': `https://www.notearc.info/blog/${post.slug}`,
                         },
                         articleSection: post.category,
-                        keywords: post.category,
+                        keywords: [post.category, post.title.split(':')[0], 'personal development', 'self improvement', 'NoteArc'].filter(Boolean).join(', '),
+                        wordCount: post.content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length,
+                        articleBody: post.content.replace(/<[^>]*>/g, '').substring(0, 500),
+                    }),
+                }}
+            />
+            {/* BreadcrumbList Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            {
+                                '@type': 'ListItem',
+                                position: 1,
+                                name: 'Home',
+                                item: 'https://www.notearc.info',
+                            },
+                            {
+                                '@type': 'ListItem',
+                                position: 2,
+                                name: 'Blog',
+                                item: 'https://www.notearc.info/blog',
+                            },
+                            {
+                                '@type': 'ListItem',
+                                position: 3,
+                                name: post.category,
+                                item: `https://www.notearc.info/topic/${post.category.toLowerCase().replace(/\s+/g, '-')}`,
+                            },
+                            {
+                                '@type': 'ListItem',
+                                position: 4,
+                                name: post.title,
+                            },
+                        ],
                     }),
                 }}
             />
