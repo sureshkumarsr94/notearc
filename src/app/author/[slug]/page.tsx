@@ -223,42 +223,65 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                         </div>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-3">
-                                {currentPage > 1 && (
-                                    <Link
-                                        href={`/author/${slug}?page=${currentPage - 1}`}
-                                        className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600 transition-all duration-300"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Previous
-                                    </Link>
-                                )}
-                                <div className="flex items-center gap-2">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        {totalPages > 1 && (() => {
+                            // Smart pagination: show first, last, current +/- 2, with ellipsis
+                            const getPageNumbers = () => {
+                                const pages: (number | string)[] = [];
+                                const delta = 2;
+                                const left = currentPage - delta;
+                                const right = currentPage + delta;
+
+                                for (let i = 1; i <= totalPages; i++) {
+                                    if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+                                        pages.push(i);
+                                    } else if (pages[pages.length - 1] !== '...') {
+                                        pages.push('...');
+                                    }
+                                }
+                                return pages;
+                            };
+
+                            return (
+                                <div className="flex justify-center items-center gap-3">
+                                    {currentPage > 1 && (
                                         <Link
-                                            key={pageNum}
-                                            href={`/author/${slug}?page=${pageNum}`}
-                                            className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium transition-all duration-300 ${pageNum === currentPage
-                                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                                                : 'bg-white text-gray-600 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600'
-                                                }`}
+                                            href={`/author/${slug}?page=${currentPage - 1}`}
+                                            className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600 transition-all duration-300"
                                         >
-                                            {pageNum}
+                                            <ChevronLeft className="h-4 w-4" />
+                                            Previous
                                         </Link>
-                                    ))}
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {getPageNumbers().map((pageNum, idx) =>
+                                            pageNum === '...' ? (
+                                                <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+                                            ) : (
+                                                <Link
+                                                    key={pageNum}
+                                                    href={`/author/${slug}?page=${pageNum}`}
+                                                    className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium transition-all duration-300 ${pageNum === currentPage
+                                                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
+                                                        : 'bg-white text-gray-600 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600'
+                                                        }`}
+                                                >
+                                                    {pageNum}
+                                                </Link>
+                                            )
+                                        )}
+                                    </div>
+                                    {currentPage < totalPages && (
+                                        <Link
+                                            href={`/author/${slug}?page=${currentPage + 1}`}
+                                            className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600 transition-all duration-300"
+                                        >
+                                            Next
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Link>
+                                    )}
                                 </div>
-                                {currentPage < totalPages && (
-                                    <Link
-                                        href={`/author/${slug}?page=${currentPage + 1}`}
-                                        className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-md border border-gray-100 hover:border-orange-200 hover:text-orange-600 transition-all duration-300"
-                                    >
-                                        Next
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Link>
-                                )}
-                            </div>
-                        )}
+                            );
+                        })()}
                     </>
                 ) : (
                     <div className="text-center py-20">
