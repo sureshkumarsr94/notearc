@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createPost, updatePost, getUserPosts, CreatePostInput } from '@/lib/posts';
+import { createPost, updatePost, getPaginatedUserPosts, CreatePostInput } from '@/lib/posts';
 
 // POST - Create a new post
 export async function POST(request: NextRequest) {
@@ -90,8 +90,8 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// GET - Get current user's posts
-export async function GET() {
+// GET - Get current user's posts with pagination
+export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 
@@ -99,10 +99,34 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const posts = await getUserPosts(session.user.id);
-        return NextResponse.json({ posts });
+        // Get pagination parameters from URL
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = parseInt(searchParams.get('limit') || '10', 10);
+
+        // Validate pagination parameters
+        const validPage = Math.max(1, page);
+        const validLimit = Math.min(50, Math.max(1, limit)); // Cap at 50 items
+
+        const { posts, stats, totalPages } = await getPaginatedUserPosts(
+            session.user.id,
+            validPage,
+            validLimit
+        );
+
+        return NextResponse.json({
+            posts,
+            stats,
+            pagination: {
+                page: validPage,
+                limit: validLimit,
+                totalPages,
+                total: stats.total
+            }
+        });
     } catch (error) {
         console.error('Error in GET /api/posts:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+

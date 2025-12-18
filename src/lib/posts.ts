@@ -516,6 +516,76 @@ export async function getUserPosts(authorId: number): Promise<Post[]> {
   }
 }
 
+// Get paginated posts by a specific user (for "My Posts" feature with server-side pagination)
+export interface UserPostsStats {
+  total: number;
+  published: number;
+  drafts: number;
+  totalViews: number;
+}
+
+export async function getPaginatedUserPosts(
+  authorId: number,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ posts: Post[], stats: UserPostsStats, totalPages: number }> {
+  try {
+    const offset = (page - 1) * limit;
+
+    // Get stats (total counts and views)
+    const [statsRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'published' OR status IS NULL THEN 1 ELSE 0 END) as published,
+        SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as drafts,
+        COALESCE(SUM(views), 0) as totalViews
+       FROM posts WHERE author_id = ?`,
+      [authorId]
+    );
+
+    const stats: UserPostsStats = {
+      total: Number(statsRows[0].total) || 0,
+      published: Number(statsRows[0].published) || 0,
+      drafts: Number(statsRows[0].drafts) || 0,
+      totalViews: Number(statsRows[0].totalViews) || 0
+    };
+
+    const totalPages = Math.ceil(stats.total / limit);
+
+    // Get paginated posts
+    interface PostRow extends RowDataPacket {
+      slug: string;
+      title: string;
+      excerpt: string;
+      date: string;
+      readTime: string;
+      category: string;
+      views: number;
+      image: string | null;
+      status: string;
+    }
+
+    const [rows] = await pool.query<PostRow[]>(
+      `SELECT slug, title, excerpt, date, readTime, category, views, image, status
+       FROM posts WHERE author_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [authorId, limit, offset]
+    );
+
+    return {
+      posts: rows as unknown as Post[],
+      stats,
+      totalPages
+    };
+  } catch (error) {
+    console.error('Error fetching paginated user posts:', error);
+    return {
+      posts: [],
+      stats: { total: 0, published: 0, drafts: 0, totalViews: 0 },
+      totalPages: 0
+    };
+  }
+}
+
 // Get a post for editing (includes draft posts for the author)
 export async function getPostForEdit(slug: string, authorId: number): Promise<Post | null> {
   try {
