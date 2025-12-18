@@ -18,9 +18,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }));
 
-    // Topic/Category routes
+    // Topic/Category routes - ensure proper URL encoding for special characters
     const topicRoutes = categories.map((category) => ({
-        url: `${baseUrl}/topic/${category.slug}`,
+        url: `${baseUrl}/topic/${encodeURIComponent(category.slug)}`,
         lastModified: new Date(),
         changeFrequency: 'weekly' as const,
         priority: 0.7,
