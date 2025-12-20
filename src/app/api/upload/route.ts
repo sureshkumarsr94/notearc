@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
             ContentType: contentType,
         });
 
-        const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // 5 minutes
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uploadUrl = await getSignedUrl(s3Client as any, command as any, { expiresIn: 300 }); // 5 minutes
 
         // Construct public URL
         const publicUrl = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${key}`;
