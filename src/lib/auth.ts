@@ -104,10 +104,10 @@ export const authOptions: NextAuthOptions = {
                 return true;
             }
         },
-        async session({ session, token }) {
+        async session({ session }) {
             console.log('Session callback triggered', { email: session.user?.email });
 
-            if (session.user) {
+            if (session.user?.email) {
                 try {
                     const [rows] = await pool.query<RowDataPacket[]>(
                         "SELECT id FROM users WHERE email = ?",
@@ -122,6 +122,7 @@ export const authOptions: NextAuthOptions = {
                     }
                 } catch (error) {
                     console.error("Error fetching user ID for session:", error);
+                    // Don't throw - return session without ID so auth still works
                 }
             }
             return session;
