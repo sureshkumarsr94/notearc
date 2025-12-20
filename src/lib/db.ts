@@ -13,14 +13,23 @@ declare global {
 let pool: mysql.Pool;
 
 if (!global.mysqlPool) {
+    console.log('DB Connection Config:', {
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        database: process.env.DB_NAME || 'notearc',
+        hasPassword: !!process.env.DB_PASSWORD
+    });
+
     global.mysqlPool = mysql.createPool({
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || 'password',
         database: process.env.DB_NAME || 'notearc',
         waitForConnections: true,
-        connectionLimit: 10,
+        connectionLimit: 5,
         queueLimit: 0,
+        connectTimeout: 10000,
+        ssl: process.env.DB_HOST?.includes('amazonaws.com') ? { rejectUnauthorized: false } : undefined
     });
     console.log('Created new MySQL connection pool');
 }
