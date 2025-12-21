@@ -1,7 +1,4 @@
 import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // Declare a global variable to hold the pool instance
 declare global {
