@@ -67,7 +67,7 @@ jobs:
                   "DB_USER": "${{ secrets.DB_USER }}",
                   "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
                   "NEXTAUTH_SECRET": "${{ secrets.NEXTAUTH_SECRET }}",
-                  "NEXTAUTH_URL": "https://notearc.info",
+                  "NEXTAUTH_URL": "https://www.notearc.info",
                   "GOOGLE_CLIENT_ID": "${{ secrets.GOOGLE_CLIENT_ID }}",
                   "GOOGLE_CLIENT_SECRET": "${{ secrets.GOOGLE_CLIENT_SECRET }}"
                 }
