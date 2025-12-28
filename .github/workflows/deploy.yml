@@ -1,20 +1,18 @@
-name: Deploy to Lightsail
+name: Deploy to Lightsail VM
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 env:
   AWS_REGION: ap-south-1
-  SERVICE_NAME: notearc-app
-  CONTAINER_NAME: notearc
+  ECR_REGISTRY: 602310134850.dkr.ecr.ap-south-1.amazonaws.com
+  ECR_REPOSITORY: notearc
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,63 +24,73 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install Lightsail Control Plugin
-        run: |
-          curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
-          sudo mv lightsailctl /usr/local/bin/lightsailctl
-          sudo chmod +x /usr/local/bin/lightsailctl
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker Image
-        run: |
-          docker build -t $CONTAINER_NAME:latest .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Push Image to Lightsail
-        run: |
-          aws lightsail push-container-image \
-            --region $AWS_REGION \
-            --service-name $SERVICE_NAME \
-            --label $CONTAINER_NAME \
-            --image $CONTAINER_NAME:latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Get pushed image name
-        id: image
-        run: |
-          IMAGE=$(aws lightsail get-container-images --service-name $SERVICE_NAME --region $AWS_REGION --query "containerImages[0].image" --output text)
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
-          echo "Pushed image: $IMAGE"
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to Lightsail
-        run: |
-          aws lightsail create-container-service-deployment \
-            --service-name $SERVICE_NAME \
-            --region $AWS_REGION \
-            --containers '{
-              "notearc": {
-                "image": "${{ steps.image.outputs.image }}",
-                "ports": {"3000": "HTTP"},
-                "environment": {
-                  "NODE_ENV": "production",
-                  "DB_HOST": "${{ secrets.DB_HOST }}",
-                  "DB_NAME": "${{ secrets.DB_NAME }}",
-                  "DB_USER": "${{ secrets.DB_USER }}",
-                  "DB_PASSWORD": "${{ secrets.DB_PASSWORD }}",
-                  "NEXTAUTH_SECRET": "${{ secrets.NEXTAUTH_SECRET }}",
-                  "NEXTAUTH_URL": "https://notearc.info",
-                  "GOOGLE_CLIENT_ID": "${{ secrets.GOOGLE_CLIENT_ID }}",
-                  "GOOGLE_CLIENT_SECRET": "${{ secrets.GOOGLE_CLIENT_SECRET }}"
-                }
-              }
-            }' \
-            --public-endpoint '{
-              "containerName": "notearc",
-              "containerPort": 3000,
-              "healthCheck": {
-                "path": "/",
-                "intervalSeconds": 10
-              }
-            }'
+      - name: Deploy to Lightsail VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ubuntu
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY
+          script: |
+            # Login to ECR
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+            
+            # Pull the latest image
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            
+            # Stop and remove existing container if running
+            docker stop notearc 2>/dev/null || true
+            docker rm notearc 2>/dev/null || true
+            
+            # Run new container with environment variables
+            docker run -d \
+              --name notearc \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              -e NODE_ENV=production \
+              -e DB_HOST="${{ secrets.DB_HOST }}" \
+              -e DB_NAME="${{ secrets.DB_NAME }}" \
+              -e DB_USER="${{ secrets.DB_USER }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+              -e NEXTAUTH_URL="https://notearc.info" \
+              -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+              -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+              $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            
+            # Cleanup old images
+            docker image prune -f
 
       - name: Deployment complete
         run: |
-          echo "🚀 Deployment triggered!"
-          echo "URL: https://notearc-app.v95gvqy5800yt.ap-south-1.cs.amazonlightsail.com/"
+          echo "🚀 Deployed to Lightsail VM!"
+          echo "URL: http://${{ secrets.LIGHTSAIL_HOST }}:3000"
