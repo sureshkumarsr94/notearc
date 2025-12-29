@@ -66,9 +66,6 @@ export const metadata: Metadata = {
   verification: {
     google: 'your-google-verification-code', // Add your actual verification code
   },
-  other: {
-    'google-adsense-account': 'ca-pub-3921845751221806',
-  },
 };
 
 
@@ -80,6 +77,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-3921845751221806" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased flex flex-col min-h-screen`}
       >
