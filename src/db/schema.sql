@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS posts (
     image VARCHAR(500),
     author_id INT,
     status ENUM('draft', 'published') DEFAULT 'draft',
+    posted_in_linkedin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id)

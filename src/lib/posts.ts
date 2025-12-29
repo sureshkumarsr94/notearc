@@ -622,3 +622,44 @@ export async function getPostForEdit(slug: string, authorId: number): Promise<Po
     return null;
   }
 }
+
+// LinkedIn tracking functions
+export interface LinkedInPost {
+  slug: string;
+  title: string;
+  date: string;
+  category: string;
+  posted_in_linkedin: boolean;
+}
+
+export async function getUnpostedLinkedInPosts(limit: number = 10): Promise<LinkedInPost[]> {
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT slug, title, date, category, COALESCE(posted_in_linkedin, 0) as posted_in_linkedin
+       FROM posts 
+       WHERE (posted_in_linkedin = 0 OR posted_in_linkedin IS NULL)
+         AND (status = 'published' OR status IS NULL)
+       ORDER BY date ASC
+       LIMIT ?`,
+      [limit]
+    );
+    return rows as unknown as LinkedInPost[];
+  } catch (error) {
+    console.error('Error fetching unposted LinkedIn posts:', error);
+    return [];
+  }
+}
+
+export async function markPostedInLinkedIn(slug: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await pool.query(
+      'UPDATE posts SET posted_in_linkedin = 1 WHERE slug = ?',
+      [slug]
+    );
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking post as posted in LinkedIn:', error);
+    return { success: false, error: 'Failed to update post' };
+  }
+}
+
